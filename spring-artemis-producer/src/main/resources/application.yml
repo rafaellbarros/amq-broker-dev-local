@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: spring-artemis-producer
+
+  artemis:
+    broker:
+      url: tcp://localhost:61616
+    user: admin
+    password: admin
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
+server:
+  port: 8090
