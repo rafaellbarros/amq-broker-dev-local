@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: spring-artemis-consumer
+
+  artemis:
+    broker:
+      url: tcp://localhost:61616
+    user: admin
+    password: admin
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
+server:
+  port: 8092
