@@ -15,16 +15,47 @@ services:
       - AMQ_EXTRA_ARGS=--no-autotune --no-fsync
       - AMQ_DATA_DIR_LOGGING=true
       - AMQ_CRITICAL_ANALYZER=false
-      - AMQ_EXTRA_ARGS=--force # Adicionado para forçar sobrescrita
+      - AMQ_EXTRA_ARGS=--force
     volumes:
       - amq-data:/opt/jboss/amq/data
-      - ./broker/etc/:/home/jboss/broker/etc # Monta o diretório completo
-    user: "0:0"  # root
+      - ./broker/etc/:/home/jboss/broker/etc
+      - ./lib/mysql-connector-java-8.0.28.jar:/home/jboss/broker/lib/mysql-connector-java.jar
+    user: "0:0"
     command: >
       bash -c "mkdir -p /opt/jboss/amq/data &&
                chown -R 1000:0 /opt/jboss/amq &&
                chown -R 1000:0 /home/jboss/broker &&
                exec /opt/amq/bin/launch.sh"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8161/console/jolokia"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - amq-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-artemis
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: artemis_db
+      MYSQL_USER: artemis
+      MYSQL_PASSWORD: artemis
+    ports:
+      - "33066:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uartemis", "-partemis"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     networks:
       - amq-network
 
@@ -34,3 +65,4 @@ networks:
 
 volumes:
   amq-data:
+  mysql-data:
